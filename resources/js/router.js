@@ -1,20 +1,21 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import index from './components/productos/index.vue'
-import create from './components/productos/create.vue'
+import productosIndex from './components/productos/index.vue'
+import takePhoto from './components/takePhoto/takePhoto.vue'
+
 
 Vue.use(VueRouter)
 
 const routes = [
     {
         path: '/index',
-        component: index
+        component: productosIndex
     },
     {
-        name: 'create',
-        path: '/create',
-        component: create,
+        name: 'takePhoto',
+        path: '/takePhoto',
+        component: takePhoto,
     }
     
 ]
