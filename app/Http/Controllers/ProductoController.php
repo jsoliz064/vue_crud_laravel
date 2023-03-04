@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
-
+use Illuminate\Support\Facades\Cache;
 class ProductoController extends Controller
 {
     public function index()
     {
         $productos=Producto::All();
+        // $productos = cache()->remember('productos', 60*60*24, function () {
+        //     return Producto::All();
+        // });
         return $productos;
     }
 
@@ -55,6 +58,15 @@ class ProductoController extends Controller
             'costo' => $request->costo,
             'precio' => $request->precio,
         ]);
+
+        // if (Cache::has('productos')) {
+        //     $productos = Cache::get('productos');
+        //     $producto_cache=$productos->find($producto->id);
+        //     $producto_cache->nombre=$producto->nombre;
+        //     $producto_cache->costo=$producto->costo;
+        //     $producto_cache->precio=$producto->precio;
+        //     Cache::put('productos', $productos, 2);
+        // }
 
     }
 

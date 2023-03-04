@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "html2canvas": "^1.4.1",
-        "vue-router": "^3.4.4"
+        "vue-router": "^3.4.4",
+        "vue-tables-2": "^2.3.5"
     }
 }

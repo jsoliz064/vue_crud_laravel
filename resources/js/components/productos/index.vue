@@ -2,7 +2,11 @@
   <div class="card m-4">
     <!-- modal -->
     <modal-component ref="modalComponent">
-      <create-component ref="createComponent" @guardar="setValues" @cancelar="closeModal"></create-component>
+      <create-component
+        ref="createComponent"
+        @guardar="setValues"
+        @cancelar="closeModal"
+      ></create-component>
     </modal-component>
 
     <div class="card-title">
@@ -25,43 +29,49 @@
 
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-striped" id="productos">
-          <thead>
-            <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Nombre</th>
-              <th scope="col">Precio</th>
-              <th scope="col">Costo</th>
-              <th scope="col" width="15%">Acciones</th>
-            </tr>
-          </thead>
+        <!-- <v-client-table :columns="columns" :data="productos">
+          <a class="fa fa-edit" >editar</a>
+        </v-client-table> -->
 
-          <tbody>
-            <tr v-for="prod in productos" :key="prod.id">
-              <td>{{ prod.id }}</td>
-              <td>{{ prod.nombre }}</td>
-              <td>{{ prod.precio }}</td>
-              <td>{{ prod.costo }}</td>
-              <td>
-                <button
-                  @click="
-                    modificar = true;
-                    openModal(prod);
-                  "
-                  class="btn btn-warning"
-                >
-                  Editar
-                </button>
-                <button
-                  @click="eliminar(prod.id)"
-                  class="btn btn-danger btn-sm"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="table table-striped" id="productos">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Costo</th>
+                <th scope="col" width="15%">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr v-for="prod in productos" :key="prod.id">
+                <td>{{ prod.id }}</td>
+                <td>{{ prod.nombre }}</td>
+                <td>{{ prod.precio }}</td>
+                <td>{{ prod.costo }}</td>
+                <td>
+                  <button
+                    @click="
+                      modificar = true;
+                      openModal(prod);
+                    "
+                    class="btn btn-warning"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    @click="eliminar(prod.id)"
+                    class="btn btn-danger btn-sm"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -79,6 +89,7 @@ export default {
   },
   data() {
     return {
+      columns: ["nombre", "precio", "costo", "acciones"],
       producto: {
         nombre: "",
         precio: 1,
@@ -131,7 +142,29 @@ export default {
       this.closeModal();
       this.listar();
     },
-
+  },
+  computed: {
+    // Agregar la columna de acciones
+    actionsColumn() {
+      return {
+        label: "Acciones",
+        field: "acciones",
+        sortable: false,
+        formatter: (value, row) => {
+          return `
+            <button @click="
+                    modificar = true;
+                    openModal(${row});
+                  ">Editar</button>
+            <button @click="eliminar(${row.id})">Eliminar</button>
+          `;
+        },
+      };
+    },
+    // Combinar las columnas definidas con la columna de acciones
+    tableColumns() {
+      return this.columns.concat(this.actionsColumn);
+    },
   },
   created() {
     this.listar();
