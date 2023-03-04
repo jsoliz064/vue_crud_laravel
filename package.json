@@ -25,7 +25,9 @@
     },
     "dependencies": {
         "html2canvas": "^1.4.1",
+        "tesseract.js": "^4.0.2",
         "vue-router": "^3.4.4",
-        "vue-tables-2": "^2.3.5"
+        "vue-tables-2": "^2.3.5",
+        "vue-web-cam": "^1.9.0"
     }
 }
