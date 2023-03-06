@@ -5401,7 +5401,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+/* harmony import */ var _ia_cameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ia/cameraOcrStatic.vue */ "./resources/js/components/ia/cameraOcrStatic.vue");
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  components: {
+    ImageOcr: _ia_cameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
   mounted: function mounted() {
     console.log("Component APP.");
   }
@@ -5455,12 +5460,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tesseract_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(tesseract_js__WEBPACK_IMPORTED_MODULE_0__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: 'CameraOCR',
+  name: "CameraOCR",
   data: function data() {
     return {
       isLoading: false,
-      text: '',
-      screenshotURL: ''
+      text: "",
+      screenshotURL: ""
     };
   },
   mounted: function mounted() {
@@ -5478,22 +5483,80 @@ __webpack_require__.r(__webpack_exports__);
       this.isLoading = true;
       this.$refs.video.pause();
       var canvas = this.$refs.canvas;
-      var context = canvas.getContext('2d');
+      var context = canvas.getContext("2d");
       canvas.width = this.$refs.video.videoWidth;
       canvas.height = this.$refs.video.videoHeight;
       context.drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
-      var dataURL = canvas.toDataURL('image/png');
+      // this.applyFilterGray();
+      // this.applyFilterNegativo();
+      this.applyFilterContraste();
+      var dataURL = canvas.toDataURL("image/png");
       this.screenshotURL = dataURL;
       tesseract_js__WEBPACK_IMPORTED_MODULE_0___default().recognize(dataURL).then(function (result) {
         _this2.text = result.data.text;
-        console.log("prediccion:", result.data.text);
+        console.log("prediccion", result.data.text);
         _this2.isLoading = false;
       });
     },
+    applyFilter: function applyFilter() {
+      var img = this.$refs.canvas;
+      img.style.filter = "blur(0px) brightness(111%) contrast(200%) grayscale(100%) hue-rotate(0deg) invert(100%) opacity(100%) saturate(1) sepia(0%)";
+    },
+    applyFilterGray: function applyFilterGray() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var grayScale = 0.2989 * r + 0.587 * g + 0.114 * b;
+
+        // Si el color es oscuro
+        data[i] = grayScale; // rojo
+        data[i + 1] = grayScale; // verde
+        data[i + 2] = grayScale; // azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterNegativo: function applyFilterNegativo() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i]; // Rojo
+        data[i + 1] = 255 - data[i + 1]; // Verde
+        data[i + 2] = 255 - data[i + 2]; // Azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterContraste: function applyFilterContraste() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      var umbral = 125;
+      var nuevoUmbral = 255;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var grayScale = (r + g + b) / 3;
+        data[i] = grayScale > umbral ? nuevoUmbral : 0; // rojo
+        data[i + 1] = grayScale > umbral ? nuevoUmbral : 0; // verde
+        data[i + 2] = grayScale > umbral ? nuevoUmbral : 0; // azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
     reset: function reset() {
       this.isLoading = false;
-      this.text = '';
-      this.screenshotURL = '';
+      this.text = "";
+      this.screenshotURL = "";
       this.$refs.video.play();
     }
   }
@@ -5516,52 +5579,124 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tesseract_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(tesseract_js__WEBPACK_IMPORTED_MODULE_0__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: 'ImageOCR',
-  props: {
-    imageSrc: {
-      type: String,
-      required: true
-    }
-  },
+  name: "ImageOCR",
   data: function data() {
     return {
-      text: ''
+      text: ""
     };
   },
   methods: {
     recognizeText: function recognizeText() {
       var _this = this;
-      tesseract_js__WEBPACK_IMPORTED_MODULE_0___default().recognize(this.$refs.image.src, 'spa').then(function (result) {
+      var canvas = this.$refs.canvas;
+      this.applyFilterNegativo();
+      this.applyFilterGray();
+      this.applyFilterContraste();
+      var dataURL = canvas.toDataURL("image/png");
+      tesseract_js__WEBPACK_IMPORTED_MODULE_0___default().recognize(dataURL).then(function (result) {
         _this.text = result.data.text;
-        console.log(result);
+        console.log(result.data.text);
       });
+    },
+    applyFilterContraste: function applyFilterContraste() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      var umbral = 120;
+      var nuevoUmbral = 255;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var grayScale = (r + g + b) / 3;
+        data[i] = grayScale > umbral ? nuevoUmbral : 0; // rojo
+        data[i + 1] = grayScale > umbral ? nuevoUmbral : 0; // verde
+        data[i + 2] = grayScale > umbral ? nuevoUmbral : 0; // azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterNegativo: function applyFilterNegativo() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i]; // Rojo
+        data[i + 1] = 255 - data[i + 1]; // Verde
+        data[i + 2] = 255 - data[i + 2]; // Azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterGray: function applyFilterGray() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var grayScale = 0.2989 * r + 0.587 * g + 0.114 * b;
+
+        // Si el color es oscuro
+        data[i] = grayScale; // rojo
+        data[i + 1] = grayScale; // verde
+        data[i + 2] = grayScale; // azul
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterNitidez: function applyFilterNitidez() {
+      var canvas = this.$refs.canvas;
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      // Aplicar el filtro de nitidez
+      var matrix = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]];
+      var factor = 0.8;
+      var bias = 0;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var a = data[i + 3];
+        var x = i / 4 % canvas.width;
+        var y = Math.floor(i / 4 / canvas.width);
+        var newR = 0;
+        var newG = 0;
+        var newB = 0;
+        for (var j = -1; j <= 1; j++) {
+          for (var k = -1; k <= 1; k++) {
+            var neighborX = x + k;
+            var neighborY = y + j;
+            if (neighborX >= 0 && neighborY >= 0 && neighborX < canvas.width && neighborY < canvas.height) {
+              var neighborIndex = (neighborY * canvas.width + neighborX) * 4;
+              newR += data[neighborIndex] * matrix[j + 1][k + 1];
+              newG += data[neighborIndex + 1] * matrix[j + 1][k + 1];
+              newB += data[neighborIndex + 2] * matrix[j + 1][k + 1];
+            }
+          }
+        }
+        data[i] = newR * factor + bias;
+        data[i + 1] = newG * factor + bias;
+        data[i + 2] = newB * factor + bias;
+      }
+      ctx.putImageData(imageData, 0, 0);
     }
-  }
-});
-
-/***/ }),
-
-/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js&":
-/*!*****************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js& ***!
-  \*****************************************************************************************************************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _cameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cameraOcrStatic.vue */ "./resources/js/components/ia/cameraOcrStatic.vue");
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: 'OCRPage',
-  components: {
-    ImageOcr: _cameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
-  data: function data() {
-    return {
-      imagePath: '/img/aprende.png'
+  mounted: function mounted() {
+    var canvas = this.$refs.canvas;
+    var ctx = canvas.getContext("2d");
+    var img = new Image();
+    img.src = "/img/carnet.jpg";
+    // img.crossOrigin = "Anonymous"; // si la imagen está alojada en otro dominio
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
     };
   }
 });
@@ -5792,7 +5927,8 @@ __webpack_require__.r(__webpack_exports__);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       var dataURL = canvas.toDataURL("image/png");
       this.photo = dataURL;
-      this.savePhoto(dataURL);
+      this.applyFilterNitido();
+      //this.savePhoto(dataURL);
       //   this.captureVideo();
     },
     // Tomar una captura de pantalla del video y guardarla en un elemento de imagen
@@ -5812,6 +5948,36 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (error) {
         console.log(error);
       });
+    },
+    applyFilter: function applyFilter(ctx) {
+      var canvas = this.$refs.canvas;
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i];
+        var g = data[i + 1];
+        var b = data[i + 2];
+        var grayScale = 0.2989 * r + 0.587 * g + 0.114 * b;
+        if (grayScale < 200) {
+          // Si el color es oscuro
+          data[i] = grayScale; // rojo
+          data[i + 1] = grayScale; // verde
+          data[i + 2] = grayScale; // azul
+        } else {
+          // Si el color es claro
+          data[i + 3] = 0; // Establecer la transparencia a 0
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+    applyFilterNitido: function applyFilterNitido() {
+      var img = this.$refs.imagen;
+      if (img) {
+        img.addEventListener("load", function () {
+          img.style.filter = "blur(0px) brightness(111%) contrast(200%) grayscale(100%) hue-rotate(0deg) invert(100%) opacity(100%) saturate(1) sepia(0%)";
+        });
+      }
     }
   },
   mounted: function mounted() {
@@ -5899,15 +6065,7 @@ var render = function render() {
       "exact-active-class": "active",
       to: "/cameraOcr"
     }
-  }, [_vm._v("Image To Text")])], 1), _vm._v(" "), _c("li", {
-    staticClass: "nav-item"
-  }, [_c("router-link", {
-    staticClass: "nav-link",
-    attrs: {
-      "exact-active-class": "active",
-      to: "/cameraOcr2"
-    }
-  }, [_vm._v("Image To Text Static")])], 1)])])]), _vm._v(" "), _c("div", [_c("router-view")], 1)]);
+  }, [_vm._v("Image To Text")])], 1)])])]), _vm._v(" "), _c("div", [_c("router-view")], 1)]);
 };
 var staticRenderFns = [function () {
   var _vm = this,
@@ -6018,11 +6176,11 @@ var render = function render() {
     }
   })]), _vm._v(" "), _c("div", {
     staticClass: "text-container"
-  }, [_vm.isLoading ? _c("div", [_c("p", [_vm._v("Cargando...")])]) : _vm._e(), _vm._v(" "), _vm.text ? _c("div", [_c("h3", [_vm._v("Extracted Text:")]), _vm._v(" "), _c("p", [_vm._v(_vm._s(_vm.text))]), _vm._v(" "), _c("button", {
+  }, [_vm.isLoading ? _c("div", [_c("p", [_vm._v("Cargando...")])]) : _vm._e(), _vm._v(" "), _vm.text ? _c("div", [_c("h3", [_vm._v("Texto extraído:")]), _vm._v(" "), _c("p", [_vm._v(_vm._s(_vm.text))]), _vm._v(" "), _c("button", {
     on: {
       click: _vm.reset
     }
-  }, [_vm._v("Intentar de nuevo")])]) : _vm._e(), _vm._v(" "), _vm.screenshotURL ? _c("div", [_c("h3", [_vm._v("Screenshot:")]), _vm._v(" "), _c("img", {
+  }, [_vm._v("Tomar otra foto")])]) : _vm._e(), _vm._v(" "), _vm.screenshotURL ? _c("div", [_c("h3", [_vm._v("Captura:")]), _vm._v(" "), _c("img", {
     attrs: {
       src: _vm.screenshotURL
     }
@@ -6034,7 +6192,7 @@ var render = function render() {
     on: {
       click: _vm.takePhoto
     }
-  }, [_vm._v("Take Photo")])]);
+  }, [_vm._v("\n    Tomar foto\n  ")])]);
 };
 var staticRenderFns = [];
 render._withStripped = true;
@@ -6057,43 +6215,13 @@ __webpack_require__.r(__webpack_exports__);
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
-  return _c("div", [_c("img", {
-    ref: "image",
-    attrs: {
-      src: _vm.imageSrc
-    }
+  return _c("div", [_c("canvas", {
+    ref: "canvas"
   }), _vm._v(" "), _c("button", {
     on: {
       click: _vm.recognizeText
     }
   }, [_vm._v("Extract Text")]), _vm._v(" "), _vm.text ? _c("div", [_c("h3", [_vm._v("Extracted Text:")]), _vm._v(" "), _c("p", [_vm._v(_vm._s(_vm.text))])]) : _vm._e()]);
-};
-var staticRenderFns = [];
-render._withStripped = true;
-
-
-/***/ }),
-
-/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2&":
-/*!****************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2& ***!
-  \****************************************************************************************************************************************************************************************************************************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* binding */ render),
-/* harmony export */   "staticRenderFns": () => (/* binding */ staticRenderFns)
-/* harmony export */ });
-var render = function render() {
-  var _vm = this,
-    _c = _vm._self._c;
-  return _c("div", [_c("image-ocr", {
-    attrs: {
-      "image-src": _vm.imagePath
-    }
-  })], 1);
 };
 var staticRenderFns = [];
 render._withStripped = true;
@@ -6274,33 +6402,14 @@ var render = function render() {
     staticClass: "card-body"
   }, [_c("div", {
     staticClass: "table-responsive"
-  }, [_c("div", {
-    staticClass: "table-responsive"
-  }, [_c("table", {
-    staticClass: "table table-striped",
+  }, [_c("v-client-table", {
     attrs: {
-      id: "productos"
+      columns: _vm.columns,
+      data: _vm.productos
     }
-  }, [_vm._m(1), _vm._v(" "), _c("tbody", _vm._l(_vm.productos, function (prod) {
-    return _c("tr", {
-      key: prod.id
-    }, [_c("td", [_vm._v(_vm._s(prod.id))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(prod.nombre))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(prod.precio))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(prod.costo))]), _vm._v(" "), _c("td", [_c("button", {
-      staticClass: "btn btn-warning",
-      on: {
-        click: function click($event) {
-          _vm.modificar = true;
-          _vm.openModal(prod);
-        }
-      }
-    }, [_vm._v("\n                  Editar\n                ")]), _vm._v(" "), _c("button", {
-      staticClass: "btn btn-danger btn-sm",
-      on: {
-        click: function click($event) {
-          return _vm.eliminar(prod.id);
-        }
-      }
-    }, [_vm._v("\n                  Eliminar\n                ")])])]);
-  }), 0)])])])])], 1);
+  }, [_c("a", {
+    staticClass: "fa fa-edit"
+  }, [_vm._v("editar")])])], 1)])], 1);
 };
 var staticRenderFns = [function () {
   var _vm = this,
@@ -6308,31 +6417,6 @@ var staticRenderFns = [function () {
   return _c("h2", {
     staticClass: "d-flex justify-content-center align-items-center"
   }, [_c("b", [_vm._v("Productos")])]);
-}, function () {
-  var _vm = this,
-    _c = _vm._self._c;
-  return _c("thead", [_c("tr", [_c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("ID")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Nombre")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Precio")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Costo")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col",
-      width: "15%"
-    }
-  }, [_vm._v("Acciones")])])]);
 }];
 render._withStripped = true;
 
@@ -6369,13 +6453,14 @@ var render = function render() {
     staticStyle: {
       display: "none"
     }
-  }), _vm._v(" "), _vm.photo ? _c("img", {
+  }), _vm._v(" "), _c("img", {
+    ref: "imagen",
     attrs: {
       src: _vm.photo,
       width: "320",
       height: "240"
     }
-  }) : _vm._e()]);
+  })]);
 };
 var staticRenderFns = [];
 render._withStripped = true;
@@ -6463,19 +6548,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
-/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
+/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm.js");
 /* harmony import */ var _components_productos_index_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/productos/index.vue */ "./resources/js/components/productos/index.vue");
 /* harmony import */ var _components_takePhoto_takePhoto_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/takePhoto/takePhoto.vue */ "./resources/js/components/takePhoto/takePhoto.vue");
 /* harmony import */ var _components_ia_cameraOcr_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/ia/cameraOcr.vue */ "./resources/js/components/ia/cameraOcr.vue");
-/* harmony import */ var _components_ia_mainCameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/ia/mainCameraOcrStatic.vue */ "./resources/js/components/ia/mainCameraOcrStatic.vue");
 
 
 
 
 
-
-vue__WEBPACK_IMPORTED_MODULE_4__["default"].use(vue_router__WEBPACK_IMPORTED_MODULE_5__["default"]);
+vue__WEBPACK_IMPORTED_MODULE_3__["default"].use(vue_router__WEBPACK_IMPORTED_MODULE_4__["default"]);
 var routes = [{
   path: '/index',
   component: _components_productos_index_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
@@ -6487,12 +6570,8 @@ var routes = [{
   name: 'cameraOcr',
   path: '/cameraOcr',
   component: _components_ia_cameraOcr_vue__WEBPACK_IMPORTED_MODULE_2__["default"]
-}, {
-  name: 'cameraOcr2',
-  path: '/cameraOcr2',
-  component: _components_ia_mainCameraOcrStatic_vue__WEBPACK_IMPORTED_MODULE_3__["default"]
 }];
-var router = new vue_router__WEBPACK_IMPORTED_MODULE_5__["default"]({
+var router = new vue_router__WEBPACK_IMPORTED_MODULE_4__["default"]({
   mode: 'history',
   routes: routes
 });
@@ -11771,7 +11850,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.camera-ocr {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  justify-content: center;\r\n  height: 100vh;\n}\n.camera-container {\r\n  position: relative;\r\n  width: 60%;\r\n  height: 60%;\r\n  margin-bottom: 20px;\n}\n.camera-container video {\r\n  position: absolute;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  width: 100%;\r\n  height: 100%;\n}\n.take-photo-btn {\r\n  padding: 10px 20px;\r\n  font-size: 1.5rem;\n}\n.text-container {\r\n  text-align: center;\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.camera-ocr {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  justify-content: center;\r\n  height: 100vh;\n}\n.camera-container {\r\n  position: relative;\r\n  width: 60%;\r\n  height: 60%;\r\n  margin-bottom: 20px;\n}\n.camera-container video {\r\n  position: absolute;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  width: 50%;\r\n  height: 50%;\n}\n.take-photo-btn {\r\n  padding: 10px 20px;\r\n  font-size: 1.5rem;\n}\n.text-container {\r\n  text-align: center;\r\n  overflow-y: scroll;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -41577,45 +41656,6 @@ component.options.__file = "resources/js/components/ia/cameraOcrStatic.vue"
 
 /***/ }),
 
-/***/ "./resources/js/components/ia/mainCameraOcrStatic.vue":
-/*!************************************************************!*\
-  !*** ./resources/js/components/ia/mainCameraOcrStatic.vue ***!
-  \************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mainCameraOcrStatic.vue?vue&type=template&id=635e2da2& */ "./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2&");
-/* harmony import */ var _mainCameraOcrStatic_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mainCameraOcrStatic.vue?vue&type=script&lang=js& */ "./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js&");
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
-
-
-
-
-
-/* normalize component */
-;
-var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _mainCameraOcrStatic_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__.render,
-  _mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
-  false,
-  null,
-  null,
-  null
-  
-)
-
-/* hot reload */
-if (false) { var api; }
-component.options.__file = "resources/js/components/ia/mainCameraOcrStatic.vue"
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
-
-/***/ }),
-
 /***/ "./resources/js/components/productos/create.vue":
 /*!******************************************************!*\
   !*** ./resources/js/components/productos/create.vue ***!
@@ -41799,22 +41839,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js&":
-/*!*************************************************************************************!*\
-  !*** ./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js& ***!
-  \*************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_mainCameraOcrStatic_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./mainCameraOcrStatic.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=script&lang=js&");
- /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_mainCameraOcrStatic_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
-
-/***/ }),
-
 /***/ "./resources/js/components/productos/create.vue?vue&type=script&lang=js&":
 /*!*******************************************************************************!*\
   !*** ./resources/js/components/productos/create.vue?vue&type=script&lang=js& ***!
@@ -41927,23 +41951,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_cameraOcrStatic_vue_vue_type_template_id_1f59be1b___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_cameraOcrStatic_vue_vue_type_template_id_1f59be1b___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./cameraOcrStatic.vue?vue&type=template&id=1f59be1b& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/cameraOcrStatic.vue?vue&type=template&id=1f59be1b&");
-
-
-/***/ }),
-
-/***/ "./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2&":
-/*!*******************************************************************************************!*\
-  !*** ./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2& ***!
-  \*******************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__.render),
-/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
-/* harmony export */ });
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_mainCameraOcrStatic_vue_vue_type_template_id_635e2da2___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./mainCameraOcrStatic.vue?vue&type=template&id=635e2da2& */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/components/ia/mainCameraOcrStatic.vue?vue&type=template&id=635e2da2&");
 
 
 /***/ }),

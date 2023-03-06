@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div align="center">
+        <img src="carnet2.jpg" height="350" alt="">
+    </div>
+    <br>
+    <label for="">Blur</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="blur"
+        data-scale="px"><br>
+
+    <label for="">Brightness</label>
+    <input type="range" min="0" max="200" value="100" step="1" onchange="applyFilter()" data-filter="brightness"
+        data-scale="%"><br>
+
+    <label for="">Contrast</label>
+    <input type="range" min="0" max="300" value="100" step="1" onchange="applyFilter()" data-filter="contrast"
+        data-scale="%"><br>
+
+    <label for="">GrayScale</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="grayscale"
+        data-scale="%"><br>
+
+    <label for="">Hue Rotate</label>
+    <input type="range" min="0" max="360" value="0" step="1" onchange="applyFilter()" data-filter="hue-rotate"
+        data-scale="deg"><br>
+
+    <label for="">Invert</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="invert"
+        data-scale="%"><br>
+
+    <label for="">Opacity</label>
+    <input type="range" min="0" max="100" value="100" step="1" onchange="applyFilter()" data-filter="opacity"
+        data-scale="%"><br>
+
+    <label for="">Saturate</label>
+    <input type="range" min="1" max="100" value="1" step="1" onchange="applyFilter()" data-filter="saturate"
+        data-scale=""><br>
+
+    <label for="">Sepia</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="sepia"
+        data-scale="%"><br>
+
+        <script type="text/javascript">
+            var image=document.querySelector('img');
+            var filterControls=document.querySelectorAll('input[type=range]');
+            applyFilterInit();
+            function applyFilter() {
+                console.log('applyFilter')
+                var computedFilters ='';
+                filterControls.forEach(function(item, index) {
+                    computedFilters+=item.getAttribute('data-filter')+'('+item.value+item.getAttribute('data-scale')+') ';
+                });
+                console.log(computedFilters);
+                image.style.filter=computedFilters;
+            }
+            function applyFilterInit(){
+                image.style.filter='blur(0px) brightness(111%) contrast(200%) grayscale(100%) hue-rotate(0deg) invert(100%) opacity(100%) saturate(1) sepia(0%)'
+            }
+        </script>
+
+</body>
+
+</html>

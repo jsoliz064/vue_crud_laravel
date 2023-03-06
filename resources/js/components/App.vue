@@ -45,29 +45,27 @@
             >
           </li>
 
-          <li class="nav-item">
-            <router-link
-              class="nav-link"
-              exact-active-class="active"
-              to="/cameraOcr2"
-              >Image To Text Static</router-link
-            >
-          </li>
-          
         </ul>
       </div>
     </nav>
     <!-- BODY -->
     <div>
+      <!-- <image-ocr/> -->
       <router-view></router-view>
     </div>
   </main>
 </template>
 
 <script>
+import ImageOcr from './ia/cameraOcrStatic.vue';
+
 export default {
+  components: {
+    ImageOcr
+  },
   mounted() {
     console.log("Component APP.");
   },
+  
 };
 </script>

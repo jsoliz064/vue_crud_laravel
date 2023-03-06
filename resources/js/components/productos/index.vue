@@ -29,11 +29,11 @@
 
     <div class="card-body">
       <div class="table-responsive">
-        <!-- <v-client-table :columns="columns" :data="productos">
+        <v-client-table :columns="columns" :data="productos">
           <a class="fa fa-edit" >editar</a>
-        </v-client-table> -->
+        </v-client-table>
 
-        <div class="table-responsive">
+        <!-- <div class="table-responsive">
           <table class="table table-striped" id="productos">
             <thead>
               <tr>
@@ -71,7 +71,7 @@
               </tr>
             </tbody>
           </table>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

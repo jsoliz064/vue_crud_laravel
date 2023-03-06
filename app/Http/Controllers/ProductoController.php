@@ -9,10 +9,12 @@ class ProductoController extends Controller
 {
     public function index()
     {
-        $productos=Producto::All();
-        // $productos = cache()->remember('productos', 60*60*24, function () {
-        //     return Producto::All();
-        // });
+        // $productos=Producto::All();
+        return Producto::All();
+
+        $productos = Cache::remember('productos', 120, function () {
+            return Producto::All();
+        });
         return $productos;
     }
 
