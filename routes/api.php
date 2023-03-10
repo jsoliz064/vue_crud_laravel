@@ -21,6 +21,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::resource('productos',ProductoController::class);
+Route::resource('productos', ProductoController::class);
+Route::get('buscarProducto/{id}', [ProductoController::class, 'buscarProducto']);
+Route::get('buscarProducto2/{id}', [ProductoController::class, 'buscarProducto2']);
+Route::put('editarProducto/{id}', [ProductoController::class, 'editarProducto']);
+Route::delete('eliminarProducto/{id}', [ProductoController::class, 'eliminarProducto']);
 
-Route::post('/save-photo', [PhotoController::class,'store']);
+
+Route::get('buscarPorNombre', [ProductoController::class, 'buscarPorNombre']);
+
+
+Route::post('/save-photo', [PhotoController::class, 'store']);

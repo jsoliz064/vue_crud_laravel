@@ -4,18 +4,97 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
+use App\Models\Venta;
+
 use Illuminate\Support\Facades\Cache;
+
 class ProductoController extends Controller
 {
-    public function index()
-    {
-        // $productos=Producto::All();
-        return Producto::All();
-
-        $productos = Cache::remember('productos', 120, function () {
-            return Producto::All();
-        });
+    public function index(){
+        $venta=new Venta();
+        $venta->Cache();
+        
+        $query1=["id",">","9000"];
+        $query2=["total",">","999"];
+        
+        $querys=[];
+        $querys[]=$query1;
+        $querys[]=$query2;
+        return $venta->WhereCache($querys);
+        
+        $productos = Producto::where('precio', '>', 99)
+        ->orderBy('nombre')
+        ->cache();
+        
         return $productos;
+    }
+    public function buscarProducto($id)
+    {
+        $resultado = null;
+        $totalProductos = Cache::remember("total_productos", 60 * 60, function () {
+            return Producto::count();
+        });
+        $numVariablesCache = ceil($totalProductos / 10000);
+        for ($i = 1; $i <= $numVariablesCache; $i++) {
+            $productos = Cache::get('productos_' . $i);
+            $prod = $productos->where('id', $id)->first();
+            if ($prod) {
+                return $prod;
+            }
+        }
+        return $resultado;
+    }
+    public function buscarProducto2($id)
+    {
+        $paquetes = $this->productos_keys();
+        foreach ($paquetes as $paquete) {
+            $key = $this->productos_key($paquete);
+            if ($id >= $key['inicio'] && $id <= $key['fin']) {
+                $productos = Cache::get($paquete);
+                $prod = $productos->where('id', $id)->first();
+                if ($prod) {
+                    return $prod;
+                }
+            }
+        }
+        return [];
+    }
+    public function editarProducto(Request $request, $id)
+    {
+        $paquetes = $this->productos_keys();
+        foreach ($paquetes as $paquete) {
+            $key = $this->productos_key($paquete);
+            if ($id >= $key['inicio'] && $id <= $key['fin']) {
+                $productos = Cache::get($paquete);
+                $prod = $productos->where('id', $id)->first();
+                if ($prod) {
+                    $prod->update($request->all());
+                    Cache::put($paquete, $productos, 60 * 60);
+                    return $prod;
+                }
+            }
+        }
+
+        return [];
+    }
+    public function eliminarProducto($id)
+    {
+        $paquetes = $this->productos_keys();
+        foreach ($paquetes as $paquete) {
+            $key = $this->productos_key($paquete);
+            if ($id >= $key['inicio'] && $id <= $key['fin']) {
+                $productos = Cache::get($paquete);
+                $indice = $productos->search(function ($item, $key) use ($id) {
+                    return $item->id == $id;
+                });
+                if ($indice !== false) {
+                    $productos->forget($indice);
+                    Cache::put($paquete, $productos, 60 * 60);
+                    return "eliminado";
+                }
+            }
+        }
+        return "no encontrado";
     }
 
     /**
@@ -37,7 +116,6 @@ class ProductoController extends Controller
             'costo' => $request->costo,
             'precio' => $request->precio,
         ]);
-
     }
 
     /**
@@ -60,15 +138,6 @@ class ProductoController extends Controller
             'costo' => $request->costo,
             'precio' => $request->precio,
         ]);
-
-        // if (Cache::has('productos')) {
-        //     $productos = Cache::get('productos');
-        //     $producto_cache=$productos->find($producto->id);
-        //     $producto_cache->nombre=$producto->nombre;
-        //     $producto_cache->costo=$producto->costo;
-        //     $producto_cache->precio=$producto->precio;
-        //     Cache::put('productos', $productos, 2);
-        // }
 
     }
 
